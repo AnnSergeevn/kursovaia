@@ -7,10 +7,10 @@ import time
 with open('token.txt', 'r') as file_tok:
     TOKEN = file_tok.read().strip()  # первая строка токен (проверен на проверочном коде)
 
-def long_function(mylist):
+'''def long_function(mylist):
     for i in tqdm(mylist):
         time.sleep(1)
-    return True
+    return True'''
 
 class YaUploader:
     def __init__(self, ya_token: str):
@@ -27,7 +27,7 @@ class YaUploader:
 
 
     def upload(self, folder_name, data):
-        mylist = []
+
         self.folder_creation(folder_name)
         count = 0
         photos = {}
@@ -36,8 +36,7 @@ class YaUploader:
                    'Authorization': f'OAuth {self.token}'}
 
 
-        for photo in data:
-
+        for photo in tqdm(data):
              photo_name = photo.get("file_name")
              file_name = photo_name
              files_path = photo.get("url")
@@ -50,8 +49,7 @@ class YaUploader:
                          'path': f"{folder_name}/{file_name}",
                          'url': f"{files_path}"})
              count += 1
-             mylist.append(count)
-             long_function(mylist)
+
              print(f'Фотографий загружено на Яндекс диск: {count}')
 
              photos["file_name"] = file_name
@@ -120,16 +118,14 @@ class VkUser:
             photos_info['url'] = size['url']
             photos_info['size'] = size['type']
             photos.append(photos_info)
-
-        print(f'Загружено {len(max_size_photo)} фото')
         return photos
 
 
 if __name__ == '__main__':
     user_ID = (int(input("Введите ID пользователя: ")))
     user = VkUser(TOKEN, user_ID)
-    folder_name = str(input('Введите имя папки на Яндекс диске, в которую необходимо сохранить фото: '))
-    ya_token = str(input('Введите ваш токен ЯндексДиск: '))
+    folder_name = (input('Введите имя папки на Яндекс диске, в которую необходимо сохранить фото: '))
+    ya_token = (input('Введите ваш токен ЯндексДиск: '))
     uploader = YaUploader(ya_token)
     photos_list = user.get_all_photos()
     result = uploader.upload(folder_name, photos_list)
