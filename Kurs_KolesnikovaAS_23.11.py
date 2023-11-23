@@ -9,6 +9,7 @@ class YaUploader:
     def __init__(self, ya_token: str):
         self.token = ya_token
 
+
     def folder_creation(self):
         url = f'https://cloud-api.yandex.net/v1/disk/resources/'
         headers = {'Content-Type': 'application/json',
@@ -18,36 +19,34 @@ class YaUploader:
         requests.put(url=url, headers=headers, params=params)
 
 
-    def upload(self, folder_name, file_name, file_path, file_size):
-        url = f'https://cloud-api.yandex.net/v1/disk/resources/upload'
-
+    def upload(self, folder_name, data):
+        count = 0
+        photos = {}
+        photos_json=[]
         headers = {'Content-Type': 'application/json',
-                       'Authorization': f'OAuth {self.token}'}
-        params = {'path': f'{folder_name}/{file_name}',
-                      'overwrite': 'true'}
+                   'Authorization': f'OAuth {self.token}'}
+        for photo in data:
+            photo_name = photo.get("file_name")
+            file_name = photo_name
+            files_path = photo.get("url")
+            file_size = photo.get("size")
 
-        # Получение ссылки на загрузку
-        response = requests.get(url=url, headers=headers, params=params)
-        href = response.json().get('href')
-
-        # Загрузка файла
-        requests.post('https://cloud-api.yandex.net:443/v1/disk/resources/upload',
+             # Загрузка файла
+            requests.post('https://cloud-api.yandex.net:443/v1/disk/resources/upload',
                      headers=headers,
                      params={
-                         'path': f"{href}/{file_name}",
-                         'url': f"{file_path}"})
+                         'path': f"{folder_name}/{file_name}",
+                         'url': f"{files_path}"})
+            count += 1
+            print(f'Фотографий загружено на Яндекс диск: {count}')
 
-        photos = {}
-        photos["file_name"] = file_name
-        photos["size"] = file_size
-
-        print(photos)
+            photos["file_name"] = file_name
+            photos["size"] = file_size
+            photos_json.append(photos)
 
         # Записываем данные о всех скачанных фоторафиях в файл .json
         with open("photos.json", "w") as file:
-            json.dump(photos, file, indent=4)
-
-
+                json.dump(photos_json, file, indent=4)
 
 class VkUser:
     url = 'https://api.vk.com/method/'
@@ -110,20 +109,13 @@ class VkUser:
             photos.append(photos_info)
 
         print(f'Загружено {len(max_size_photo)} фото')
-
-
-        '''# Записываем данные о всех скачанных фоторафиях в файл .json
-        with open("photos.json", "w") as file:
-            json.dump(photos, file, indent=4)'''
-
         return photos
 
 
 if __name__ == '__main__':
-    #user_ID = (int(input("Введите ID пользователя: ")))
-    user = VkUser(TOKEN, 687284178)
+    user_ID = (int(input("Введите ID пользователя: ")))
+    user = VkUser(TOKEN, user_ID)
     info = user.get_profil_photos()
-    #pprint(info)
 
     ya_token = str(input('Введите ваш токен ЯндексДиск: '))
     uploader = YaUploader(ya_token)
@@ -132,29 +124,11 @@ if __name__ == '__main__':
 
     photos_list = user.get_all_photos()
 
-    count = 0
-
     for photo in photos_list:
         photo_name = photo.get("file_name")
         file_name = photo_name
         files_path = photo.get("url")
         file_size = photo.get("size")
-        result = uploader.upload(folder_name, file_name, files_path, file_size)
+    result = uploader.upload(folder_name, photos_list)
 
-
-
-
-
-
-        print(result)
-        count += 1
-        print(f'Фотографий загружено на Яндекс диск: {count}')
-
-
-
-
-
-
-
-
-        #73680897, 687284178, 523800622
+    #73680897, 687284178, 523800622
