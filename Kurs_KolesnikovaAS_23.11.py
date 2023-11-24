@@ -1,16 +1,8 @@
-import requests, os, json
-from pprint import pprint
-from urllib import parse
+import requests, json
 from tqdm import tqdm
-import time
 
 with open('token.txt', 'r') as file_tok:
     TOKEN = file_tok.read().strip()  # первая строка токен (проверен на проверочном коде)
-
-'''def long_function(mylist):
-    for i in tqdm(mylist):
-        time.sleep(1)
-    return True'''
 
 class YaUploader:
     def __init__(self, ya_token: str):
@@ -27,20 +19,18 @@ class YaUploader:
 
 
     def upload(self, folder_name, data):
-
         self.folder_creation(folder_name)
         count = 0
-        photos = {}
-        photos_json=[]
+        photos_json = []
         headers = {'Content-Type': 'application/json',
                    'Authorization': f'OAuth {self.token}'}
-
 
         for photo in tqdm(data):
              photo_name = photo.get("file_name")
              file_name = photo_name
              files_path = photo.get("url")
              file_size = photo.get("size")
+             photos = {}
 
              # Загрузка файла
              requests.post('https://cloud-api.yandex.net:443/v1/disk/resources/upload',
@@ -55,7 +45,6 @@ class YaUploader:
              photos["file_name"] = file_name
              photos["size"] = file_size
              photos_json.append(photos)
-
         # Записываем данные о всех скачанных фоторафиях в файл .json
         with open("photos.json", "w") as file:
                 json.dump(photos_json, file, indent=4)
@@ -111,10 +100,7 @@ class VkUser:
                 max_size_photo[f"{photo['likes']['count']} + {photo['date']}"] = size['url']
                 photos_info['file_name'] = f"{photo['likes']['count']}+{photo['date']}.jpg"
 
-
-
             # Формируем список всех фотографий для дальнейшей упаковки в .json
-
             photos_info['url'] = size['url']
             photos_info['size'] = size['type']
             photos.append(photos_info)
